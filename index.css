@@ -137,31 +137,31 @@ button{
 .fa-trash:hover {
   color: #e0245e;
 }
-/* — Reply form stacked layout — */
+/* — Reply form — */
 .reply-form {
-  margin: 10px 0 0 40px;  /* indent under the tweet */
+  margin: 10px 0 0 40px;   /* same indent as your replies */
 }
 
-/* make textarea fill the width */
+/* full-width, roomy textarea */
 .reply-form textarea {
   display: block;
   width: 100%;
+  box-sizing: border-box;
+  min-height: 60px;        /* or 80px if you like */
   padding: 10px;
   font-size: 14px;
   line-height: 1.4;
   border: 1px solid #ccc;
   border-radius: 4px;
   resize: vertical;
-  min-height: 60px;
-  box-sizing: border-box;
 }
 
-/* button underneath, full width too */
+/* full-width button underneath */
 .reply-form .reply-btn {
   display: block;
   width: 100%;
   margin-top: 8px;
-  padding: 8px 0;
+  padding: 10px 0;
   font-size: 14px;
   background-color: #1DA1F2;
   color: #fff;

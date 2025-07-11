@@ -1,7 +1,9 @@
+// index.js
+
 import { tweetsData } from './data.js'
 import { v4 as uuidv4 } from 'https://jspm.dev/uuid'
 
-// — hydrate from localStorage (safe)
+// — Hydrate from localStorage (safe JSON.parse)
 let stored = null
 try {
   stored = JSON.parse(localStorage.getItem('tweetsData'))
@@ -12,49 +14,66 @@ if (Array.isArray(stored)) {
   tweetsData.splice(0, tweetsData.length, ...stored)
 }
 
+// — Helper to persist on every change
 function saveTweets() {
   localStorage.setItem('tweetsData', JSON.stringify(tweetsData))
 }
 
+// — Central click listener
 document.addEventListener('click', e => {
-  // delete
+  // 1) Delete
   const del = e.target.closest('[data-delete]')
-  if (del)    return handleDeleteClick(del.dataset.delete)
+  if (del) {
+    handleDeleteClick(del.dataset.delete)
+    return
+  }
 
-  // submit a new reply
+  // 2) Submit reply
   if (e.target.dataset.replySubmit) {
-    return handleReplySubmit(e.target.dataset.replySubmit)
+    handleReplySubmit(e.target.dataset.replySubmit)
+    return
   }
-  // like
+
+  // 3) Like
   if (e.target.dataset.like) {
-    return handleLikeClick(e.target.dataset.like)
+    handleLikeClick(e.target.dataset.like)
+    return
   }
-  // retweet
+
+  // 4) Retweet
   if (e.target.dataset.retweet) {
-    return handleRetweetClick(e.target.dataset.retweet)
+    handleRetweetClick(e.target.dataset.retweet)
+    return
   }
-  // toggle replies
+
+  // 5) Toggle replies
   if (e.target.dataset.reply) {
-    return handleReplyClick(e.target.dataset.reply)
+    handleReplyClick(e.target.dataset.reply)
+    return
   }
-  // new tweet
+
+  // 6) New tweet
   if (e.target.id === 'tweet-btn') {
-    return handleTweetBtnClick()
+    handleTweetBtnClick()
+    return
   }
 })
 
+// — Handlers
 function handleLikeClick(id) {
   const t = tweetsData.find(t => t.uuid === id)
   t.isLiked = !t.isLiked
   t.likes += t.isLiked ? 1 : -1
-  render(); saveTweets()
+  render()
+  saveTweets()
 }
 
 function handleRetweetClick(id) {
   const t = tweetsData.find(t => t.uuid === id)
   t.isRetweeted = !t.isRetweeted
   t.retweets += t.isRetweeted ? 1 : -1
-  render(); saveTweets()
+  render()
+  saveTweets()
 }
 
 function handleReplyClick(id) {
@@ -73,9 +92,10 @@ function handleReplySubmit(id) {
     tweetText: text
   })
   input.value = ''
-  // keep replies open so they see it
+  // keep the replies open so the new one is visible
   document.getElementById(`replies-${id}`).classList.remove('hidden')
-  render(); saveTweets()
+  render()
+  saveTweets()
 }
 
 function handleTweetBtnClick() {
@@ -95,25 +115,28 @@ function handleTweetBtnClick() {
     uuid: uuidv4()
   })
   input.value = ''
-  render(); saveTweets()
+  render()
+  saveTweets()
 }
 
 function handleDeleteClick(id) {
   const idx = tweetsData.findIndex(t => t.uuid === id)
   if (idx > -1) {
     tweetsData.splice(idx, 1)
-    render(); saveTweets()
+    render()
+    saveTweets()
   }
 }
 
+// — Build the feed HTML
 function getFeedHtml() {
-  let feedHtml = ''
+  let html = ''
 
   tweetsData.forEach(tweet => {
-    const likeC = tweet.isLiked      ? 'liked' : ''
-    const rtC   = tweet.isRetweeted  ? 'retweeted' : ''
+    const likeClass = tweet.isLiked ? 'liked' : ''
+    const rtClass   = tweet.isRetweeted ? 'retweeted' : ''
 
-    // build list of existing replies
+    // build existing replies
     let repliesHtml = ''
     tweet.replies.forEach(r => {
       repliesHtml += `
@@ -128,7 +151,8 @@ function getFeedHtml() {
         </div>`
     })
 
-    feedHtml += `
+    // main tweet + replies + reply form
+    html += `
       <div class="tweet">
         <div class="tweet-inner">
           <img src="${tweet.profilePic}" class="profile-pic">
@@ -142,12 +166,12 @@ function getFeedHtml() {
                 ${tweet.replies.length}
               </span>
               <span class="tweet-detail">
-                <i class="fa-solid fa-heart ${likeC}"
+                <i class="fa-solid fa-heart ${likeClass}"
                    data-like="${tweet.uuid}"></i>
                 ${tweet.likes}
               </span>
               <span class="tweet-detail">
-                <i class="fa-solid fa-retweet ${rtC}"
+                <i class="fa-solid fa-retweet ${rtClass}"
                    data-retweet="${tweet.uuid}"></i>
                 ${tweet.retweets}
               </span>
@@ -160,25 +184,27 @@ function getFeedHtml() {
           </div>
         </div>
 
-        <!-- replies + inline reply form -->
-        <div class="reply-form">
-          <textarea
-            id="reply-input-${tweet.uuid}"
-            placeholder="What's happening?"
-            rows="3"
-          ></textarea>
-          <button
-            class="reply-btn"
-            data-reply-submit="${tweet.uuid}"
-          >Reply</button>
+        <div class="hidden" id="replies-${tweet.uuid}">
+          ${repliesHtml}
+          <div class="reply-form">
+            <textarea
+              id="reply-input-${tweet.uuid}"
+              placeholder="What's happening?"
+              rows="3"
+            ></textarea>
+            <button
+              class="reply-btn"
+              data-reply-submit="${tweet.uuid}"
+            >Reply</button>
+          </div>
         </div>
-      `
+      </div>`
   })
 
-  return feedHtml
+  return html
 }
 
-
+// — Render the feed
 function render() {
   document.getElementById('feed').innerHTML = getFeedHtml()
 }
