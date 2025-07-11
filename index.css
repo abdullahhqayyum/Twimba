@@ -137,3 +137,27 @@ button{
 .fa-trash:hover {
   color: #e0245e;
 }
+
+/* reply form under each tweet */
+.reply-form {
+  margin: 10px 0 0 40px;
+  display: flex;
+  gap: 5px;
+}
+
+.reply-form textarea {
+  flex: 1;
+  font-size: 13px;
+  padding: 5px;
+  resize: none;
+}
+
+.reply-form .reply-btn {
+  background-color: #1DA1F2;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 13px;
+}

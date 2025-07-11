@@ -1,93 +1,90 @@
-// index.js
-
 import { tweetsData } from './data.js'
 import { v4 as uuidv4 } from 'https://jspm.dev/uuid'
 
-// — Hydrate from localStorage (safe JSON.parse)
-let storedTweets = null
+// — hydrate from localStorage (safe)
+let stored = null
 try {
-  storedTweets = JSON.parse(localStorage.getItem('tweetsData'))
-} catch (err) {
-  console.warn('Could not parse stored tweets, clearing bad data:', err)
+  stored = JSON.parse(localStorage.getItem('tweetsData'))
+} catch {
   localStorage.removeItem('tweetsData')
 }
-
-if (Array.isArray(storedTweets)) {
-  // overwrite the imported default array
-  tweetsData.splice(0, tweetsData.length, ...storedTweets)
+if (Array.isArray(stored)) {
+  tweetsData.splice(0, tweetsData.length, ...stored)
 }
 
-// — Helper to persist on every change
 function saveTweets() {
   localStorage.setItem('tweetsData', JSON.stringify(tweetsData))
 }
 
-// — Central click listener with delegation
-document.addEventListener('click', function(e) {
-  // 1) Delete (closest matches even if you click the <span> around the <i>)
-  const delBtn = e.target.closest('[data-delete]')
-  if (delBtn) {
-    handleDeleteClick(delBtn.dataset.delete)
-    return
-  }
+document.addEventListener('click', e => {
+  // delete
+  const del = e.target.closest('[data-delete]')
+  if (del)    return handleDeleteClick(del.dataset.delete)
 
-  // 2) Like
+  // submit a new reply
+  if (e.target.dataset.replySubmit) {
+    return handleReplySubmit(e.target.dataset.replySubmit)
+  }
+  // like
   if (e.target.dataset.like) {
-    handleLikeClick(e.target.dataset.like)
-    return
+    return handleLikeClick(e.target.dataset.like)
   }
-  // 3) Retweet
+  // retweet
   if (e.target.dataset.retweet) {
-    handleRetweetClick(e.target.dataset.retweet)
-    return
+    return handleRetweetClick(e.target.dataset.retweet)
   }
-  // 4) Toggle replies
+  // toggle replies
   if (e.target.dataset.reply) {
-    handleReplyClick(e.target.dataset.reply)
-    return
+    return handleReplyClick(e.target.dataset.reply)
   }
-  // 5) Post new tweet
+  // new tweet
   if (e.target.id === 'tweet-btn') {
-    handleTweetBtnClick()
-    return
+    return handleTweetBtnClick()
   }
 })
 
-function handleLikeClick(tweetId) {
-  const tweet = tweetsData.find(t => t.uuid === tweetId)
-  if (!tweet) return
-
-  tweet.isLiked = !tweet.isLiked
-  tweet.likes += tweet.isLiked ? 1 : -1
-
-  render()
-  saveTweets()
+function handleLikeClick(id) {
+  const t = tweetsData.find(t => t.uuid === id)
+  t.isLiked = !t.isLiked
+  t.likes += t.isLiked ? 1 : -1
+  render(); saveTweets()
 }
 
-function handleRetweetClick(tweetId) {
-  const tweet = tweetsData.find(t => t.uuid === tweetId)
-  if (!tweet) return
-
-  tweet.isRetweeted = !tweet.isRetweeted
-  tweet.retweets += tweet.isRetweeted ? 1 : -1
-
-  render()
-  saveTweets()
+function handleRetweetClick(id) {
+  const t = tweetsData.find(t => t.uuid === id)
+  t.isRetweeted = !t.isRetweeted
+  t.retweets += t.isRetweeted ? 1 : -1
+  render(); saveTweets()
 }
 
-function handleReplyClick(tweetId) {
-  document
-    .getElementById(`replies-${tweetId}`)
-    .classList.toggle('hidden')
+function handleReplyClick(id) {
+  document.getElementById(`replies-${id}`).classList.toggle('hidden')
+}
+
+function handleReplySubmit(id) {
+  const input = document.getElementById(`reply-input-${id}`)
+  const text = input.value.trim()
+  if (!text) return
+
+  const t = tweetsData.find(t => t.uuid === id)
+  t.replies.push({
+    handle: '@Scrimba',
+    profilePic: 'images/scrimbalogo.png',
+    tweetText: text
+  })
+  input.value = ''
+  // keep replies open so they see it
+  document.getElementById(`replies-${id}`).classList.remove('hidden')
+  render(); saveTweets()
 }
 
 function handleTweetBtnClick() {
-  const inputEl = document.getElementById('tweet-input')
-  const text = inputEl.value.trim()
+  const input = document.getElementById('tweet-input')
+  const text = input.value.trim()
   if (!text) return
 
   tweetsData.unshift({
-    handle: '@Abdullah',
+    handle: '@Scrimba',
     profilePic: 'images/scrimbalogo.png',
     likes: 0,
     retweets: 0,
@@ -95,31 +92,26 @@ function handleTweetBtnClick() {
     replies: [],
     isLiked: false,
     isRetweeted: false,
-    uuid: uuidv4(),
+    uuid: uuidv4()
   })
-
-  inputEl.value = ''
-  render()
-  saveTweets()
+  input.value = ''
+  render(); saveTweets()
 }
 
-function handleDeleteClick(tweetId) {
-  const idx = tweetsData.findIndex(t => t.uuid === tweetId)
-  if (idx !== -1) {
+function handleDeleteClick(id) {
+  const idx = tweetsData.findIndex(t => t.uuid === id)
+  if (idx > -1) {
     tweetsData.splice(idx, 1)
-    render()
-    saveTweets()
+    render(); saveTweets()
   }
 }
 
 function getFeedHtml() {
   let html = ''
-
   tweetsData.forEach(tweet => {
-    const likeClass = tweet.isLiked ? 'liked' : ''
-    const rtClass = tweet.isRetweeted ? 'retweeted' : ''
+    const likeC = tweet.isLiked ? 'liked' : ''
+    const rtC   = tweet.isRetweeted ? 'retweeted' : ''
 
-    // build replies
     let repliesHtml = ''
     tweet.replies.forEach(r => {
       repliesHtml += `
@@ -143,34 +135,46 @@ function getFeedHtml() {
             <p class="tweet-text">${tweet.tweetText}</p>
             <div class="tweet-details">
               <span class="tweet-detail">
-                <i class="fa-regular fa-comment-dots" 
+                <i class="fa-regular fa-comment-dots"
                    data-reply="${tweet.uuid}"></i>
                 ${tweet.replies.length}
               </span>
               <span class="tweet-detail">
-                <i class="fa-solid fa-heart ${likeClass}"
+                <i class="fa-solid fa-heart ${likeC}"
                    data-like="${tweet.uuid}"></i>
                 ${tweet.likes}
               </span>
               <span class="tweet-detail">
-                <i class="fa-solid fa-retweet ${rtClass}"
+                <i class="fa-solid fa-retweet ${rtC}"
                    data-retweet="${tweet.uuid}"></i>
                 ${tweet.retweets}
               </span>
-              <span class="tweet-detail" 
-                    data-delete="${tweet.uuid}" 
+              <span class="tweet-detail"
+                    data-delete="${tweet.uuid}"
                     title="Delete this tweet">
                 <i class="fa-solid fa-trash"></i>
               </span>
             </div>
           </div>
         </div>
+
+        <!-- replies + reply form -->
         <div class="hidden" id="replies-${tweet.uuid}">
           ${repliesHtml}
+          <div class="reply-form">
+            <textarea
+              id="reply-input-${tweet.uuid}"
+              placeholder="Write a reply…"
+              rows="2"
+            ></textarea>
+            <button
+              class="reply-btn"
+              data-reply-submit="${tweet.uuid}"
+            >Reply</button>
+          </div>
         </div>
       </div>`
   })
-
   return html
 }
 
