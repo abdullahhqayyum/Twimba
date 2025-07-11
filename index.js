@@ -158,28 +158,20 @@ function getFeedHtml() {
           </div>
         </div>
 
-        <!-- replies + reply form -->
         <div class="hidden" id="replies-${tweet.uuid}">
-            ${repliesHtml}
+          ${repliesHtml}
 
-            <div class="reply-form">
-              <div class="tweet-input-area">
-                <img
-                  src="images/scrimbalogo.png"
-                  class="profile-pic"
-                  alt="Your avatar"
-                />
-                <textarea
-                  id="reply-input-${tweet.uuid}"
-                  placeholder="What's happening?"
-                ></textarea>
-              </div>
-              <button
-                class="reply-btn"
-                data-reply-submit="${tweet.uuid}"
-              >Reply</button>
-            </div>
-          </div>`
+          <div class="reply-form">
+            <textarea
+              id="reply-input-${tweet.uuid}"
+              placeholder="Write a reply…"
+            ></textarea>
+            <button
+              class="reply-btn"
+              data-reply-submit="${tweet.uuid}"
+            >Reply</button>
+          </div>
+        </div>`
   })
   return html
 }
