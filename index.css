@@ -137,27 +137,45 @@ button{
 .fa-trash:hover {
   color: #e0245e;
 }
+/* —————————————————————————— */
+/* reply form styled like main tweet box */
 
-/* reply form under each tweet */
 .reply-form {
-  margin: 10px 0 0 40px;
+  border-top: 1px solid lightgray;
+  padding: 10px 0 0 40px; /* align with replies indentation */
+}
+
+.reply-form .tweet-input-area {
   display: flex;
-  gap: 5px;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.reply-form .profile-pic {
+  width: 48px; /* same size as main box */
+  border: 1px solid lightgray;
+  border-radius: 50%;
 }
 
 .reply-form textarea {
-  flex: 1;
-  font-size: 13px;
-  padding: 5px;
+  border: none;
   resize: none;
+  padding: 10px;
+  height: 60px;      /* same height as main */
+  width: 100%;
+  font-size: 20px;   /* same font size */
+  line-height: 30px; /* same line height */
 }
 
 .reply-form .reply-btn {
   background-color: #1DA1F2;
   border: none;
   color: white;
-  padding: 5px 10px;
-  border-radius: 15px;
+  padding: 10px 19px;
+  border-radius: 20px;
+  width: 100%;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 5px;
 }
