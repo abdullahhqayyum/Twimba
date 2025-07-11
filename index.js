@@ -87,7 +87,7 @@ function handleTweetBtnClick() {
   if (!text) return
 
   tweetsData.unshift({
-    handle: '@Scrimba',
+    handle: '@Abdullah',
     profilePic: 'images/scrimbalogo.png',
     likes: 0,
     retweets: 0,
