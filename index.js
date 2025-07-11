@@ -159,19 +159,19 @@ function getFeedHtml() {
         </div>
 
         <div class="hidden" id="replies-${tweet.uuid}">
-          ${repliesHtml}
+            ${repliesHtml}
 
-          <div class="reply-form">
-            <textarea
-              id="reply-input-${tweet.uuid}"
-              placeholder="Write a reply…"
-            ></textarea>
-            <button
-              class="reply-btn"
-              data-reply-submit="${tweet.uuid}"
-            >Reply</button>
-          </div>
-        </div>`
+            <div class="reply-form">
+              <textarea
+                id="reply-input-${tweet.uuid}"
+                placeholder="What's happening?"
+              ></textarea>
+              <button
+                class="reply-btn"
+                data-reply-submit="${tweet.uuid}"
+              >Reply</button>
+            </div>`
+
   })
   return html
 }
