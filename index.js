@@ -1,107 +1,117 @@
 // index.js
 
-import { tweetsData } from './data.js'
-import { v4 as uuidv4 } from 'https://jspm.dev/uuid'
+import { tweetsData } from './data.js';
+import { v4 as uuidv4 } from 'https://jspm.dev/uuid';
 
 // — Hydrate from localStorage (safe JSON.parse)
-let stored = null
+let stored = null;
 try {
-  stored = JSON.parse(localStorage.getItem('tweetsData'))
+  stored = JSON.parse(localStorage.getItem('tweetsData'));
 } catch {
-  localStorage.removeItem('tweetsData')
+  localStorage.removeItem('tweetsData');
 }
 if (Array.isArray(stored)) {
-  tweetsData.splice(0, tweetsData.length, ...stored)
+  tweetsData.splice(0, tweetsData.length, ...stored);
 }
 
-// — Helper to persist on every change
+// — Persist helper
 function saveTweets() {
-  localStorage.setItem('tweetsData', JSON.stringify(tweetsData))
+  localStorage.setItem('tweetsData', JSON.stringify(tweetsData));
 }
 
-// — Central click listener
+// — Main click listener
 document.addEventListener('click', e => {
-  // 1) Delete
-  const del = e.target.closest('[data-delete]')
-  if (del) {
-    handleDeleteClick(del.dataset.delete)
-    return
+  // 1) Toggle existing replies list
+  if (e.target.dataset.toggleReplies) {
+    const id = e.target.dataset.toggleReplies;
+    document.getElementById(`replies-${id}`).classList.toggle('hidden');
+    return;
   }
 
-  // 2) Submit reply
+  // 2) Toggle reply form
+  if (e.target.dataset.toggleForm) {
+    const id = e.target.dataset.toggleForm;
+    document.getElementById(`reply-form-${id}`).classList.toggle('hidden');
+    return;
+  }
+
+  // 3) Submit a new reply
   if (e.target.dataset.replySubmit) {
-    handleReplySubmit(e.target.dataset.replySubmit)
-    return
+    handleReplySubmit(e.target.dataset.replySubmit);
+    return;
   }
 
-  // 3) Like
+  // 4) Like
   if (e.target.dataset.like) {
-    handleLikeClick(e.target.dataset.like)
-    return
+    handleLikeClick(e.target.dataset.like);
+    return;
   }
 
-  // 4) Retweet
+  // 5) Retweet
   if (e.target.dataset.retweet) {
-    handleRetweetClick(e.target.dataset.retweet)
-    return
+    handleRetweetClick(e.target.dataset.retweet);
+    return;
   }
 
-  // 5) Toggle replies
-  if (e.target.dataset.reply) {
-    handleReplyClick(e.target.dataset.reply)
-    return
+  // 6) Delete
+  if (e.target.closest('[data-delete]')) {
+    const id = e.target.closest('[data-delete]').dataset.delete;
+    handleDeleteClick(id);
+    return;
   }
 
-  // 6) New tweet
+  // 7) New tweet
   if (e.target.id === 'tweet-btn') {
-    handleTweetBtnClick()
-    return
+    handleTweetBtnClick();
+    return;
   }
-})
+});
 
 // — Handlers
+
 function handleLikeClick(id) {
-  const t = tweetsData.find(t => t.uuid === id)
-  t.isLiked = !t.isLiked
-  t.likes += t.isLiked ? 1 : -1
-  render()
-  saveTweets()
+  const t = tweetsData.find(t => t.uuid === id);
+  if (!t) return;
+  t.isLiked = !t.isLiked;
+  t.likes += t.isLiked ? 1 : -1;
+  render();
+  saveTweets();
 }
 
 function handleRetweetClick(id) {
-  const t = tweetsData.find(t => t.uuid === id)
-  t.isRetweeted = !t.isRetweeted
-  t.retweets += t.isRetweeted ? 1 : -1
-  render()
-  saveTweets()
-}
-
-function handleReplyClick(id) {
-  document.getElementById(`replies-${id}`).classList.toggle('hidden')
+  const t = tweetsData.find(t => t.uuid === id);
+  if (!t) return;
+  t.isRetweeted = !t.isRetweeted;
+  t.retweets += t.isRetweeted ? 1 : -1;
+  render();
+  saveTweets();
 }
 
 function handleReplySubmit(id) {
-  const input = document.getElementById(`reply-input-${id}`)
-  const text = input.value.trim()
-  if (!text) return
+  const input = document.getElementById(`reply-input-${id}`);
+  const text = input.value.trim();
+  if (!text) return;
 
-  const t = tweetsData.find(t => t.uuid === id)
+  const t = tweetsData.find(t => t.uuid === id);
   t.replies.push({
     handle: '@Scrimba',
     profilePic: 'images/scrimbalogo.png',
     tweetText: text
-  })
-  input.value = ''
-  // keep the replies open so the new one is visible
-  document.getElementById(`replies-${id}`).classList.remove('hidden')
-  render()
-  saveTweets()
+  });
+
+  input.value = '';
+  // keep the form and list open
+  document.getElementById(`reply-form-${id}`).classList.remove('hidden');
+  document.getElementById(`replies-${id}`).classList.remove('hidden');
+
+  render();
+  saveTweets();
 }
 
 function handleTweetBtnClick() {
-  const input = document.getElementById('tweet-input')
-  const text = input.value.trim()
-  if (!text) return
+  const input = document.getElementById('tweet-input');
+  const text = input.value.trim();
+  if (!text) return;
 
   tweetsData.unshift({
     handle: '@Scrimba',
@@ -113,31 +123,33 @@ function handleTweetBtnClick() {
     isLiked: false,
     isRetweeted: false,
     uuid: uuidv4()
-  })
-  input.value = ''
-  render()
-  saveTweets()
+  });
+
+  input.value = '';
+  render();
+  saveTweets();
 }
 
 function handleDeleteClick(id) {
-  const idx = tweetsData.findIndex(t => t.uuid === id)
+  const idx = tweetsData.findIndex(t => t.uuid === id);
   if (idx > -1) {
-    tweetsData.splice(idx, 1)
-    render()
-    saveTweets()
+    tweetsData.splice(idx, 1);
+    render();
+    saveTweets();
   }
 }
 
-// — Build the feed HTML
+// — Build feed HTML
+
 function getFeedHtml() {
-  let html = ''
+  let html = '';
 
   tweetsData.forEach(tweet => {
-    const likeClass = tweet.isLiked ? 'liked' : ''
-    const rtClass   = tweet.isRetweeted ? 'retweeted' : ''
+    const likeClass = tweet.isLiked ? 'liked' : '';
+    const rtClass   = tweet.isRetweeted ? 'retweeted' : '';
 
-    // build existing replies
-    let repliesHtml = ''
+    // existing replies
+    let repliesHtml = '';
     tweet.replies.forEach(r => {
       repliesHtml += `
         <div class="tweet-reply">
@@ -148,10 +160,9 @@ function getFeedHtml() {
               <p class="tweet-text">${r.tweetText}</p>
             </div>
           </div>
-        </div>`
-    })
+        </div>`;
+    });
 
-    // main tweet + replies + reply form
     html += `
       <div class="tweet">
         <div class="tweet-inner">
@@ -162,7 +173,7 @@ function getFeedHtml() {
             <div class="tweet-details">
               <span class="tweet-detail">
                 <i class="fa-regular fa-comment-dots"
-                   data-reply="${tweet.uuid}"></i>
+                   data-toggle-replies="${tweet.uuid}"></i>
                 ${tweet.replies.length}
               </span>
               <span class="tweet-detail">
@@ -177,37 +188,46 @@ function getFeedHtml() {
               </span>
               <span class="tweet-detail"
                     data-delete="${tweet.uuid}"
-                    title="Delete this tweet">
+                    title="Delete tweet">
                 <i class="fa-solid fa-trash"></i>
               </span>
             </div>
-          </div>
-        </div>
 
-        <div class="hidden" id="replies-${tweet.uuid}">
-          ${repliesHtml}
-          <div class="reply-form">
-            <textarea
-              id="reply-input-${tweet.uuid}"
-              placeholder="What's happening?"
-              rows="3"
-            ></textarea>
             <button
-              class="reply-btn"
-              data-reply-submit="${tweet.uuid}"
+              class="reply-toggle-btn"
+              data-toggle-form="${tweet.uuid}"
             >Reply</button>
           </div>
         </div>
-      </div>`
-  })
 
-  return html
+        <!-- hidden replies list -->
+        <div class="hidden replies-list" id="replies-${tweet.uuid}">
+          ${repliesHtml}
+        </div>
+
+        <!-- hidden inline reply form -->
+        <div class="hidden reply-form" id="reply-form-${tweet.uuid}">
+          <textarea
+            id="reply-input-${tweet.uuid}"
+            placeholder="What's happening?"
+            rows="3"
+          ></textarea>
+          <button
+            class="reply-submit-btn"
+            data-reply-submit="${tweet.uuid}"
+          >Submit</button>
+        </div>
+      </div>`;
+  });
+
+  return html;
 }
 
-// — Render the feed
+// — Render
+
 function render() {
-  document.getElementById('feed').innerHTML = getFeedHtml()
+  document.getElementById('feed').innerHTML = getFeedHtml();
 }
 
 // initial render
-render()
+render();
