@@ -107,13 +107,13 @@ function handleDeleteClick(id) {
 }
 
 function getFeedHtml() {
-  let html = ''
+  let feedHtml = ''
 
   tweetsData.forEach(tweet => {
-    const likeC = tweet.isLiked ? 'liked' : ''
-    const rtC   = tweet.isRetweeted ? 'retweeted' : ''
+    const likeC = tweet.isLiked      ? 'liked' : ''
+    const rtC   = tweet.isRetweeted  ? 'retweeted' : ''
 
-    // build replies
+    // build list of existing replies
     let repliesHtml = ''
     tweet.replies.forEach(r => {
       repliesHtml += `
@@ -128,7 +128,7 @@ function getFeedHtml() {
         </div>`
     })
 
-    html += `
+    feedHtml += `
       <div class="tweet">
         <div class="tweet-inner">
           <img src="${tweet.profilePic}" class="profile-pic">
@@ -160,14 +160,13 @@ function getFeedHtml() {
           </div>
         </div>
 
-        <!-- replies + reply form -->
+        <!-- replies + inline reply form -->
         <div class="hidden" id="replies-${tweet.uuid}">
           ${repliesHtml}
           <div class="reply-form">
             <textarea
               id="reply-input-${tweet.uuid}"
               placeholder="What's happening?"
-              rows="3"
             ></textarea>
             <button
               class="reply-btn"
@@ -175,12 +174,12 @@ function getFeedHtml() {
             >Reply</button>
           </div>
         </div>
-      </div>`  // ← closes .tweet
-
+      </div>`
   })
 
-  return html
+  return feedHtml
 }
+
 
 function render() {
   document.getElementById('feed').innerHTML = getFeedHtml()

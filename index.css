@@ -138,29 +138,33 @@ button{
   color: #e0245e;
 }
 /* Simple inline reply form */
+/* — Reply form — */
 .reply-form {
   display: flex;
-  align-items: center;
   gap: 8px;
-  margin: 10px 0 0 40px; /* indent under the tweet */
+  margin: 10px 0 0 40px;   /* indent it under the tweet */
+  align-items: flex-start;
 }
 
 .reply-form textarea {
-  flex: 1;
-  padding: 6px 8px;
+  flex: 1;                  /* fill remaining space */
+  padding: 10px;
   font-size: 14px;
+  line-height: 1.4;
   border: 1px solid #ccc;
   border-radius: 4px;
   resize: vertical;
-  min-height: 36px;
+  min-height: 60px;
+  width: auto;              /* override any default */
 }
 
 .reply-form .reply-btn {
+  padding: 8px 16px;
+  font-size: 14px;
   background-color: #1DA1F2;
+  color: #fff;
   border: none;
-  color: white;
-  padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  white-space: nowrap;
 }
